@@ -39,24 +39,25 @@ btn.addEventListener("click", async (evt) => {
         amtVal = 0;
         amount.value = "0";
     }
-    let URL = `${Base_URL}?from=${fromCurr.value.toUpperCase()}&to=${toCurr.value.toUpperCase()}&amount=${amtVal}&apikey=${API_KEY}`;
+    let URL = `${Base_URL}?base=${fromCurr.value.toUpperCase()}&symbols=${toCurr.value.toUpperCase()}&apikey=${API_KEY}`;
     try {
         let response = await fetch(URL);
         let data = await response.json();
-        
-        if (data.error) {
-            throw new Error(data.error.message);
+    
+        if (!response.ok || data.error) {
+            throw new Error(data.error?.message || "Invalid API response");
         }
-
-        // Assuming the API returns rates in a "rates" object
+    
         let conversionRate = data.rates[toCurr.value.toUpperCase()];
+        if (!conversionRate) {
+            throw new Error("Conversion rate not found");
+        }
+    
         let convertedAmount = (amtVal * conversionRate).toFixed(2);
-
-        console.log(`Converted amount: ${convertedAmount} ${toCurr.value}`);
         msg.innerText = `${amtVal} ${fromCurr.value} = ${convertedAmount} ${toCurr.value}`;
     } catch (error) {
         console.error('Error fetching data:', error);
+        msg.innerText = "Error: Unable to fetch conversion rate.";
     }
-
-
+    
 });
